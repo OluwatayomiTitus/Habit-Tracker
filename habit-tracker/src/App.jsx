@@ -1,10 +1,21 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+
+import Header from "./components/Header"
+import UserSetup from "./pages/UserSetup"
+import Dashboard from "./pages/Dashboard"
+import HabitHistory from "./pages/HabitHistory"
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <h1 className="text-3xl font-bold text-blue-600">
-        Habit Tracker App
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Header />
+
+      <Routes>
+        <Route path="/setup" element={<UserSetup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/history" element={<HabitHistory />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
