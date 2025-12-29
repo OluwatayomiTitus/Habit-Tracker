@@ -1,26 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { generateToken, createUser, createGraph } from "../api/pixela";
 
 function UserSetup() {
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Persisted values
-  const [username, setUsername] = useLocalStorage("pixelaUsername", "");
-  const [token, setToken] = useLocalStorage("pixelaToken", "");
-
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!username) return setError("Username is required");
 
-    if (!username || !token) {
-      setError("Both username and token are required");
-      return;
+    const token = generateToken();
+    const graphId = "habit-graph";
+
+    try {
+      await createUser(username, token);   // Pixela account
+      await createGraph(username, token, graphId); // Graph
+
+      // Save credentials locally
+      localStorage.setItem("pixelaUsername", username);
+      localStorage.setItem("pixelaToken", token);
+      localStorage.setItem("pixelaGraphId", graphId);
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Pixela error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Setup failed. Try a different username.");
     }
-
-    setError("");
-    navigate("/dashboard");
   };
 
   return (
@@ -29,41 +36,19 @@ function UserSetup() {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded shadow w-full max-w-md"
       >
-        <h1 className="text-2xl font-bold mb-4">User Setup</h1>
+        <h1 className="text-2xl font-bold mb-4">Get Started</h1>
 
-        {error && <p className="text-red-600 mb-3 text-sm">{error}</p>}
+        {error && <p className="text-red-600 mb-3">{error}</p>}
 
-        {/* USERNAME */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
-            Pixela Username
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border rounded p-2"
-          />
-        </div>
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter a username"
+          className="w-full border p-2 mb-4"
+        />
 
-        {/* TOKEN */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">
-            Pixela Token
-          </label>
-          <input
-            type="password"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            className="w-full border rounded p-2"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Save & Continue
+        <button className="w-full bg-blue-600 text-white py-2 rounded">
+          Continue
         </button>
       </form>
     </div>
