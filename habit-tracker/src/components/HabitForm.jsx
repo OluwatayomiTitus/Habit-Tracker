@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { addPixel, addpixel } from "../api/pixela";
+import { addPixel } from "../api/pixela";
 
 function HabitForm() {
     const [quantity, setQuantity] = useState("");

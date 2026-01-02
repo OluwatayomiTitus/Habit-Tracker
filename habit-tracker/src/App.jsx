@@ -11,6 +11,7 @@ function App() {
       <Header />
 
       <Routes>
+        <Route path="/" element={<UserSetup />} />
         <Route path="/setup" element={<UserSetup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/history" element={<HabitHistory />} />
