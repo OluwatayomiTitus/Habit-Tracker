@@ -1,3 +1,6 @@
+import useLocalStorage from "../hooks/useLocalStorage";
+
+
 function HabitHistory() {
   return (
     <div className="p-6">
