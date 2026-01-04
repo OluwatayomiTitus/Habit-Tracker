@@ -7,7 +7,7 @@ function UserSetup() {
   const [mode, setMode] = useState("choose"); // choose / signup / login
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [habitName, setHabitName] = useState(""); // new
+  const [habitName, setHabitName] = useState(""); // habit name
   const [error, setError] = useState("");
 
   const USERNAME_REGEX = /^[a-z][a-z0-9-]{1,32}$/;
