@@ -1,79 +1,36 @@
 import { useState } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
 import { addPixel } from "../api/pixela";
+import { getCurrentUser } from "../helpers";
 
 function HabitForm() {
-    const [quantity, setQuantity] = useState("");
-    const [message, setMessage] = useState("");
-    const [loading, setLoading] = useState(false);
+  const currentUser = getCurrentUser();
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-    const [username] = useLocalStorage("pixelaUsername", "");
-    const [token] = useLocalStorage("pixelaToken", "");
+  if (!currentUser) return <p>Please complete setup first.</p>;
 
-    const graphId = "habit1";
+  const { username, pixelaToken, graphId } = currentUser;
+  const today = new Date().toISOString().split("T")[0].replace(/-/g, "");
 
-    const getTodayDate = () => {
-        const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth()+1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}.${month}.${day}`;
-    };
+  const handleLogHabit = async () => {
+    setSuccess(""); setError("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    try {
+      await addPixel(username, pixelaToken, graphId, today, "1");
+      setSuccess("Habit logged for today!");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError("Failed to log habit. Try again.");
+    }
+  };
 
-        if(!quantity) {
-            setMessage("Please enter a quantity")
-            return;
-        }
-
-        try {
-            setLoading(true);
-            await addPixel(
-                username,
-                token,
-                graphId,
-                getTodayDate(),
-                quantity
-            );
-            setMessage("habit logged successfully");
-            setQuantity("");
-        } catch (error) {
-            setMessage("failed to log habit");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-3">Log Today's Habit</h2>
-
-            {message && (
-                <p className="text-sm mb-2 text-gray-700">{message}</p>
-            )}
-
-            <form className="flex gap-3">
-                <input
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="Quantity"
-                className="flex-1 border rounded p-2"
-                />
-
-                <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-                >
-                    {loading ? "Logging..." : "Log"}
-                </button>
-            </form>
-        </div>
-    );
+  return (
+    <div className="space-y-3">
+      <button onClick={handleLogHabit} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Log Habit</button>
+      {success && <p className="text-green-600">{success}</p>}
+      {error && <p className="text-red-600">{error}</p>}
+    </div>
+  );
 }
 
 export default HabitForm;
