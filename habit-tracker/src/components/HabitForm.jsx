@@ -1,39 +1,34 @@
 import { useState } from "react";
 import { addPixel } from "../api/pixela";
+import { getCurrentUser } from "../helpers";
 
 function HabitForm() {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const currentUser = getCurrentUser();
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-  const username = localStorage.getItem("pixelaUsername");
-  const token = localStorage.getItem("pixelaToken");
-  const graphId = localStorage.getItem("pixelaGraphId");
+  if (!currentUser) return <p>Please complete setup first.</p>;
 
-  const handleLogToday = async () => {
-    setLoading(true);
-    setMessage("");
+  const { username, pixelaToken, graphId } = currentUser;
+  const today = new Date().toISOString().split("T")[0].replace(/-/g, "");
+
+  const handleLogHabit = async () => {
+    setSuccess(""); setError("");
 
     try {
-      await addPixel(username, token, graphId);
-      setMessage("Habit logged successfully! 🎉");
-    } catch {
-      setMessage("Already logged today or an error occurred.");
-    } finally {
-      setLoading(false);
+      await addPixel(username, pixelaToken, graphId, today, "1");
+      setSuccess("Habit logged for today!");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError("Failed to log habit. Try again.");
     }
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h2 className="text-lg font-semibold mb-3">Daily Habit</h2>
-      <button
-        onClick={handleLogToday}
-        disabled={loading}
-        className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
-      >
-        {loading ? "Logging..." : "Log Today"}
-      </button>
-      {message && <p className="mt-3 text-sm text-gray-700">{message}</p>}
+    <div className="space-y-3">
+      <button onClick={handleLogHabit} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Log Habit</button>
+      {success && <p className="text-green-600">{success}</p>}
+      {error && <p className="text-red-600">{error}</p>}
     </div>
   );
 }
